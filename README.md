@@ -1,6 +1,5 @@
 # extensor-cache-js
 ![npm](https://img.shields.io/npm/v/extensor-cache.svg)
-![npm downloads](https://img.shields.io/npm/dm/extensor-cache.svg)
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Extensor cache is a very simple, non-persistent application layer caching library, originally written for [Extensor](https://www.extensor.app), which helps to improve resiliency when you're doing read/write over a network.
