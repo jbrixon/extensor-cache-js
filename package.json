@@ -10,15 +10,25 @@
     "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\""
   },
+  "keywords": [
+    "caching",
+    "cache",
+    "in-memory",
+    "ttl",
+    "memory-cache"
+  ],
+  "contributors": [
+    {
+      "name": "Joe Rixon",
+      "email": "joe@fabrik.software"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jbrixon/extensor-cache-js.git"
   },
-  "keywords": [
-    "caching"
-  ],
   "author": "Joe Rixon",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/jbrixon/extensor-cache-js/issues"
   },
