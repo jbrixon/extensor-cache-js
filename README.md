@@ -1,4 +1,8 @@
 # extensor-cache-js
+![npm](https://img.shields.io/npm/v/extensor-cache.svg)
+![npm downloads](https://img.shields.io/npm/dm/extensor-cache.svg)
+![license](https://img.shields.io/badge/license-MIT-blue.svg)
+
 Extensor cache is a very simple, non-persistent application layer caching library, originally written for [Extensor](https://www.extensor.app), which helps to improve resiliency when you're doing read/write over a network.
 
 Extensor cache takes a callback and handles the caching and retry logic, so you don't have to switch on your brain. A lot of the examples here refer to HTTP requests, but you can use it for any form of IO, as long as there is an async function to handle it.
@@ -12,6 +16,19 @@ Out of the box, it can handle various read/write strategies:
 See below for more about when and how to use those.
 
 ---
+
+## Table of contents
+- [Usage](#usage)
+- [Key patterns](#key-patterns)
+- [Global Config](#global-config)
+- [Key-Level Configuration](#key-level-configuration)
+- [Examples](#examples)
+- [Error handling & propagation](#error-handling--propagation)
+- [Retries](#retries)
+- [Strategies](#strategies)
+- [Roll your own store](#roll-your-own-store)
+- [Testing](#testing)
+
 ## Usage
 Install Extensor cache with your favourite package manager. I use npm cos I'm *cool* like that.
 ```shell
@@ -69,6 +86,46 @@ cache.register(config);
 ```
 
 ---
+
+## Error handling & propagation
+Understanding how errors propagate helps you choose strategies and write robust handlers.
+
+- Read callbacks
+  - ReadStrategies.readThrough: on a cache miss the `readCallback` is invoked; if it throws/rejects the error propagates to the caller of `cache.get()`.
+  - ReadStrategies.readAround: the callback is called first; if it resolves its value is used; if it rejects the cache will be consulted as a fallback (if available) — the rejection will propagate only if both the callback and cache miss fail.
+  - ReadStrategies.cacheOnly: no callback is invoked; errors only occur for cache-layer problems (rare for in-memory stores).
+
+- Write callbacks
+  - WriteStrategies.writeThrough: `cache.set()` waits for the `writeCallback` to succeed. If the callback throws/rejects, the write fails and the error propagates to the caller; the cache will not be updated.
+  - WriteStrategies.writeBack: `cache.set()` updates the cache and returns immediately; the `writeCallback` runs in the background. Errors during background writes do not propagate to the original caller — they are retried according to the retry settings and will fail quietly when retry limits are exhausted.
+  - WriteStrategies.cacheOnly: the `writeCallback` is not invoked; no remote side-effect occurs.
+
+- Evictions and updates
+  - `evictCallback` and `updateCallback` share the configured write strategy and retry settings; their errors follow the same rules as write callbacks.
+
+Best practice examples
+
+```javascript
+// handle read errors (read-through)
+try {
+  const v = await cache.get("api/users/123");
+  console.log(v);
+} catch (err) {
+  // handle network/read error (fallback, default value, or surface to caller)
+  console.error("Failed to read user", err);
+}
+
+// write-through: caller will see write errors
+try {
+  await cache.set("db/products/456", { name: "x" }); // will throw if writeCallback fails
+} catch (err) {
+  console.error("Write failed and cache not updated:", err);
+}
+
+// write-back: caller will NOT see write errors; monitor retry events or logs instead
+await cache.set("metrics/page_view/789", { page: "/products" });
+// consider adding metrics/logging around background retries to observe failures
+```
 
 ## Retries
 When using the write-behind strategy, writes and deletes to a key will be automatically retried depending on the config you pass. By default, retries are exponentially backed off with jitter, with intervals calculated from the base retry interval you pass as `writeRetryInterval`. 
@@ -268,6 +325,92 @@ cache.register(config);
 ---
 ## Examples
 
+### Example 1: Caching HTTP API calls
+Use read-through strategy to cache API responses and reduce network requests:
+```javascript
+import { ExtensorCache, InMemoryStore, KeyConfig, ReadStrategies } from "extensor-cache";
+
+const cache = new ExtensorCache(new InMemoryStore());
+const apiConfig = new KeyConfig("api/users/{userId}");
+
+apiConfig.readStrategy = ReadStrategies.readThrough;
+apiConfig.ttl = 300; // cache for 5 minutes
+apiConfig.readCallback = async (context) => {
+  const response = await fetch(`https://api.example.com/users/${context.params.userId}`);
+  if (!response.ok) throw new Error("Failed to fetch user");
+  return await response.json();
+};
+
+cache.register(apiConfig);
+
+// First call hits the API, subsequent calls use cache
+const user = await cache.get("api/users/123");
+console.log(user); // { id: 123, name: "John Doe", ... }
+```
+
+### Example 2: Caching database queries with write-through
+Ensure cache and database stay in sync with write-through strategy:
+```javascript
+import { ExtensorCache, InMemoryStore, KeyConfig, ReadStrategies, WriteStrategies } from "extensor-cache";
+
+const cache = new ExtensorCache(new InMemoryStore());
+const dbConfig = new KeyConfig("db/products/{productId}");
+
+dbConfig.readStrategy = ReadStrategies.readThrough;
+dbConfig.writeStrategy = WriteStrategies.writeThrough;
+dbConfig.ttl = 600; // cache for 10 minutes
+
+dbConfig.readCallback = async (context) => {
+  return await db.query("SELECT * FROM products WHERE id = ?", [context.params.productId]);
+};
+
+dbConfig.writeCallback = async (context) => {
+  await db.query("UPDATE products SET data = ? WHERE id = ?", 
+    [JSON.stringify(context.value), context.params.productId]);
+};
+
+cache.register(dbConfig);
+
+// Read from database (or cache if available)
+const product = await cache.get("db/products/456");
+
+// Update both cache and database atomically
+await cache.set("db/products/456", { name: "Updated Product", price: 29.99 });
+```
+
+### Example 3: Write-back for non-critical analytics
+Use write-back strategy with retries for analytics or metrics where immediate consistency isn't critical:
+```javascript
+import { ExtensorCache, InMemoryStore, KeyConfig, WriteStrategies } from "extensor-cache";
+
+const cache = new ExtensorCache(new InMemoryStore());
+const metricsConfig = new KeyConfig("metrics/{eventType}/{userId}");
+
+metricsConfig.writeStrategy = WriteStrategies.writeBack;
+metricsConfig.writeRetryCount = 5;
+metricsConfig.writeRetryInterval = 1000; // 1 second base interval
+metricsConfig.writeRetryBackoff = true; // exponential backoff on retries
+
+metricsConfig.writeCallback = async (context) => {
+  await fetch("https://analytics.example.com/events", {
+    method: "POST",
+    body: JSON.stringify({
+      eventType: context.params.eventType,
+      userId: context.params.userId,
+      data: context.value
+    })
+  });
+};
+
+cache.register(metricsConfig);
+
+// Returns immediately, persists to analytics service in background with retries
+await cache.set("metrics/page_view/789", { 
+  page: "/products", 
+  timestamp: Date.now() 
+});
+```
+
 ---
 ## Strategies
 ### Read Strategies
@@ -299,8 +442,25 @@ Use this if you just want an in-memory cache. It will only write to the cache an
 ---
 ## Roll your own store
 Go crazy. Check `src/inMemoryStoreAdapter.js` to get an idea of the necessary interface, then pass that to the cache at instantation.
+ 
+---
+
+## Contributing
+Contributions and new ideas are welcome! If you find a bug or have a feature request, please open an issue at:
+
+https://github.com/jbrixon/extensor-cache-js/issues
+
+When submitting changes via pull request, please:
+
+- Fork the repository and create a topic branch.
+- Add or update tests to cover your change where appropriate.
+- Run the linter and formatter (`npm run lint` / `npm run format`) and keep the code style consistent.
+- Provide a short, clear description of the change and the motivation in your PR.
+
+Contributions are highly appreciated — thanks for helping improve the project!
 
 ---
+
 ## Testing
 Run:
 ```shell
