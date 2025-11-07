@@ -3,7 +3,6 @@ import InMemoryStoreAdapter from "./testStoreAdapter";
 import KeyConfig from "../src/keyConfig";
 import ReadStrategies from "../src/readStrategies";
 
-
 describe("read-through caching", () => {
   let cache, store;
 
@@ -12,11 +11,10 @@ describe("read-through caching", () => {
     cache = new ExtensorCache(store);
   });
 
-
   test("get returns cached value on cache hit", async () => {
     const testPattern = "test/pattern";
     const testValue = "result";
-    
+
     const config = new KeyConfig(testPattern);
     config.readCallback = async () => {};
     config.readStrategy = ReadStrategies.readThrough;
@@ -28,28 +26,30 @@ describe("read-through caching", () => {
     expect(result).toEqual(testValue);
   });
 
-
   test("get returns result of callback on cache miss", async () => {
     const testPattern = "test/pattern";
     const testValue = "result";
 
     const config = new KeyConfig(testPattern);
-    config.readCallback = async () => { return testValue; };
+    config.readCallback = async () => {
+      return testValue;
+    };
     config.readStrategy = ReadStrategies.readThrough;
     cache.register(config);
-      
+
     const result = await cache.get(testPattern);
 
     expect(result).toEqual(testValue);
   });
-
 
   test("cache is updated after cache miss and callback", async () => {
     const testPattern = "test/pattern";
     const testValue = "result";
 
     const config = new KeyConfig(testPattern);
-    config.readCallback = async () => { return testValue; };
+    config.readCallback = async () => {
+      return testValue;
+    };
     config.readStrategy = ReadStrategies.readThrough;
     cache.register(config);
 
@@ -57,7 +57,6 @@ describe("read-through caching", () => {
 
     expect(store.get(testPattern)).toEqual(testValue);
   });
-
 
   test("pattern parameters are passed to read callbacks", async () => {
     const verb = "is";
@@ -67,8 +66,9 @@ describe("read-through caching", () => {
     let paramsReceived = false;
 
     const config = new KeyConfig(testPattern);
-    config.readCallback = async (context) => { 
-      paramsReceived = context.params.verb === verb && context.params.noun === noun;
+    config.readCallback = async (context) => {
+      paramsReceived =
+        context.params.verb === verb && context.params.noun === noun;
     };
     config.readStrategy = ReadStrategies.readThrough;
     cache.register(config);

@@ -1,6 +1,5 @@
 import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
 
-
 describe("inMemoryStoreAdapter", () => {
   let store;
 
@@ -10,7 +9,6 @@ describe("inMemoryStoreAdapter", () => {
     store = new InMemoryStoreAdapter();
   });
 
-
   test("stale key-pairs are actively removed", async () => {
     const ttl = 1;
 
@@ -18,7 +16,7 @@ describe("inMemoryStoreAdapter", () => {
       const key = `key${i}`;
       store.put(key, i.toString(), ttl);
     }
-    
+
     jest.advanceTimersByTime((ttl * 10 + 1) * 100);
 
     expect(store.size()).toEqual(0);

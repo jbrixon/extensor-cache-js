@@ -60,14 +60,16 @@ class ExtensorCache {
     // read-through
     if (route?.keyConfig.readStrategy === ReadStrategies.readThrough) {
       const cachedValue = this.#store.get(key);
-      if (cachedValue !== undefined) return cachedValue;
+      if (cachedValue !== undefined) {
+        return cachedValue;
+      }
       const freshValue = await route.keyConfig.readCallback(route.context);
       this.#store.put(key, freshValue, route.keyConfig.ttl);
       return freshValue;
     }
 
     // read-around
-    if (route?.keyConfig.readStrategy == ReadStrategies.readAround) {
+    if (route?.keyConfig.readStrategy === ReadStrategies.readAround) {
       let freshValue;
       try {
         freshValue = await route.keyConfig.readCallback(route.context);

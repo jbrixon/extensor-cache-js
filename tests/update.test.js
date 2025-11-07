@@ -3,7 +3,6 @@ import InMemoryStoreAdapter from "./testStoreAdapter";
 import KeyConfig from "../src/keyConfig";
 import WriteStrategies from "../src/writeStrategies";
 
-
 describe("updating", () => {
   let cache, store;
 
@@ -12,7 +11,6 @@ describe("updating", () => {
     cache = new ExtensorCache(store);
   });
 
-
   test("the update callback is called if a value is set and a callback given", async () => {
     const testPattern = "test/pattern";
     const testValue = "result";
@@ -20,15 +18,16 @@ describe("updating", () => {
 
     store.put(testPattern, "initial");
     const config = new KeyConfig(testPattern);
-    config.updateCallback = async () => { called = true; };
+    config.updateCallback = async () => {
+      called = true;
+    };
     config.writeStrategy = WriteStrategies.writeThrough;
     cache.register(config);
 
     await cache.update(testPattern, testValue);
-    
+
     expect(called).toEqual(true);
   });
-
 
   test("the write callback is called if no update callback is set", async () => {
     const testPattern = "test/pattern";
@@ -36,20 +35,21 @@ describe("updating", () => {
     let called = false;
 
     const config = new KeyConfig(testPattern);
-    config.writeCallback = async () => { called = true; };
+    config.writeCallback = async () => {
+      called = true;
+    };
     config.writeStrategy = WriteStrategies.writeThrough;
     cache.register(config);
 
     await cache.update(testPattern, testValue);
-    
+
     expect(called).toEqual(true);
   });
-
 
   test("the cache is updated when the callback resolves", async () => {
     const testPattern = "test/pattern";
     const updatedValue = "updated";
-    const initialValue = "initial"
+    const initialValue = "initial";
 
     store.put(testPattern, initialValue);
     const config = new KeyConfig(testPattern);
@@ -59,10 +59,9 @@ describe("updating", () => {
 
     await cache.update(testPattern, updatedValue);
     const cachedResult = store.get(testPattern);
-    
+
     expect(cachedResult).toEqual(updatedValue);
   });
-
 
   test("pattern parameters are passed to the callback", async () => {
     const verb = "is";
@@ -74,8 +73,9 @@ describe("updating", () => {
 
     store.put(testKey, testValue);
     const config = new KeyConfig(testPattern);
-    config.updateCallback = async (context) => { 
-      paramsReceived = context.params.verb === verb && context.params.noun === noun;
+    config.updateCallback = async (context) => {
+      paramsReceived =
+        context.params.verb === verb && context.params.noun === noun;
     };
     config.writeStrategy = WriteStrategies.writeThrough;
     cache.register(config);
@@ -84,7 +84,6 @@ describe("updating", () => {
 
     expect(paramsReceived).toEqual(true);
   });
-
 
   test("the cache is not updated when the callback rejects", async () => {
     const testPattern = "test/pattern";
@@ -102,12 +101,13 @@ describe("updating", () => {
     store.put(testPattern, goodResult);
     try {
       await cache.update(testPattern, "new result");
-    } catch (e) {}
+    } catch (err) {
+      void err;
+    }
     const cachedResult = store.get(testPattern);
 
     expect(cachedResult).toEqual(goodResult);
   });
-
 
   test("the promise is rejected when the callback rejects", async () => {
     const testPattern = "test/pattern";
@@ -115,7 +115,7 @@ describe("updating", () => {
     const testValue = "result";
     const testError = new Error("just a test...");
 
-    store.put(testPattern, initialValue)
+    store.put(testPattern, initialValue);
     const config = new KeyConfig(testPattern);
     config.updateCallback = async () => {
       throw testError;
@@ -123,6 +123,8 @@ describe("updating", () => {
     config.writeStrategy = WriteStrategies.writeThrough;
     cache.register(config);
 
-    await expect(cache.update(testPattern, testValue)).rejects.toEqual(testError);
+    await expect(cache.update(testPattern, testValue)).rejects.toEqual(
+      testError
+    );
   });
 });

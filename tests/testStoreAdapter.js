@@ -1,13 +1,13 @@
 class TestStoreAdapter {
   #cache;
-  
+
   constructor() {
     this.#cache = {};
   }
 
-  put(key, value, ttl=0) {
+  put(key, value, ttl = 0) {
     const created = new Date();
-    
+
     this.#cache[key] = {
       value,
       ttl,
@@ -17,8 +17,10 @@ class TestStoreAdapter {
   }
 
   get(key) {
-    if (!(key in this.#cache)) return;
-    return this.#checkForFreshness(this.#cache[key]);
+    if (!(key in this.#cache)) {
+      return;
+    }
+    return this.#checkForFreshness(key);
   }
 
   evict(key) {
@@ -33,9 +35,11 @@ class TestStoreAdapter {
     return Object.keys(this.#cache).length;
   }
 
-
-  #checkForFreshness(cache) {
-    if (cache.ttl !== 0 && cache.expires < new Date()) { // expired
+  #checkForFreshness(key) {
+    const cache = this.#cache[key];
+    if (!cache) return;
+    if (cache.ttl !== 0 && cache.expires < new Date()) {
+      // expired
       delete this.#cache[key];
       return;
     }
@@ -43,6 +47,5 @@ class TestStoreAdapter {
     return cache.value;
   }
 }
-
 
 export default TestStoreAdapter;
