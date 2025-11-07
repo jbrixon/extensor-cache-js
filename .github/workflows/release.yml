@@ -12,6 +12,10 @@ on:
     paths:
       - 'package.json'
 
+permissions:
+  id-token: write  # Required for OIDC token exchange when publishing to npm
+  contents: read
+
 jobs:
   check-version:
     runs-on: ubuntu-latest
@@ -55,8 +59,14 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Build (if present)
+        run: npm run build --if-present
 
       - name: Run tests
         run: npm test
@@ -73,5 +83,3 @@ jobs:
 
       - name: Publish to npm
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
