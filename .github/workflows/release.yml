@@ -1,20 +1,18 @@
 name: Release and Publish
 
+# Trigger this workflow when the CI workflow completes. This ensures the
+# release only runs after CI has finished (and we can check its conclusion).
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'package.json'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'package.json'
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
 
 permissions:
   id-token: write  # Required for OIDC token exchange when publishing to npm
-  contents: read
+  contents: write # Need write access to create releases and tags
+  packages: write # Allow package-related actions if needed
 
 jobs:
   check-version:
@@ -45,7 +43,15 @@ jobs:
 
   release-and-publish:
     needs: check-version
-    if: needs.check-version.outputs.version-changed == 'true' && github.event_name == 'push'
+    # Only run the publish job when:
+    # - the CI workflow run concluded successfully,
+    # - it ran against the 'main' branch, and
+    # - package.json version changed.
+    if: >-
+      needs.check-version.outputs.version-changed == 'true' &&
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
     runs-on: ubuntu-latest
 
     steps:
