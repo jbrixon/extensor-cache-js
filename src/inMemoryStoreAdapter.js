@@ -1,15 +1,29 @@
+/**
+ * In-memory cache store adapter with automatic expiration handling.
+ * Implements active deletion of expired values at regular intervals.
+ */
 class InMemoryStoreAdapter {
   #cache;
-  
+
+  /**
+   * Create an in-memory store adapter.
+   * Initializes the cache and starts background expiration cleanup.
+   */
   constructor() {
     this.#cache = {};
 
     setInterval(() => this.#activelyDeleteExpiredValues(), 100);
   }
 
-  put(key, value, ttl=0) {
+  /**
+   * Store a value in the cache with optional TTL.
+   * @param {string} key - The cache key.
+   * @param {*} value - The value to store.
+   * @param {number} [ttl=0] - Time to live in seconds. A value of 0 means no expiration.
+   */
+  put(key, value, ttl = 0) {
     const created = new Date();
-    
+
     this.#cache[key] = {
       value,
       ttl,
@@ -18,32 +32,54 @@ class InMemoryStoreAdapter {
     };
   }
 
+  /**
+   * Retrieve a value from the cache.
+   * @param {string} key - The cache key.
+   * @returns {*|undefined} The cached value if found and not expired, otherwise undefined.
+   */
   get(key) {
     if (!(key in this.#cache)) return;
     return this.#checkForFreshness(key);
   }
 
+  /**
+   * Remove a value from the cache.
+   * @param {string} key - The cache key to evict.
+   */
   evict(key) {
     delete this.#cache[key];
   }
 
+  /**
+   * Clear all values from the cache.
+   */
   clear() {
     this.#cache = {};
   }
 
+  /**
+   * Get the number of entries in the cache.
+   * @returns {number} The count of cached entries.
+   */
   size() {
     return Object.keys(this.#cache).length;
   }
 
-
+  /**
+   * Check if a cached value is still fresh and delete if expired.
+   * @private
+   * @param {string} key - The cache key to check.
+   * @returns {*|undefined} The cached value if fresh, undefined if expired or not found.
+   */
   #checkForFreshness(key) {
     const cache = this.#cache[key];
     if (!cache) return;
     const now = new Date();
     // console.log(key)
     // console.log(cache.ttl !== 0 && cache.expires < now);
-    if (cache.ttl !== 0 && cache.expires < now) { // expired
-      console.log(`Deleting ${key}`)
+    if (cache.ttl !== 0 && cache.expires < now) {
+      // expired
+      console.log(`Deleting ${key}`);
       delete this.#cache[key];
       return;
     }
@@ -51,7 +87,12 @@ class InMemoryStoreAdapter {
     return cache.value;
   }
 
-
+  /**
+   * Actively delete expired values by sampling random keys.
+   * Runs periodically to prevent expired values from accumulating.
+   * Samples up to 20 keys per interval.
+   * @private
+   */
   #activelyDeleteExpiredValues() {
     const keys = Object.keys(this.#cache);
     let selectedKeys = [];
@@ -73,6 +114,5 @@ class InMemoryStoreAdapter {
     }
   }
 }
-
 
 export default InMemoryStoreAdapter;
