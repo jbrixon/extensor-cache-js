@@ -18,22 +18,16 @@ jobs:
   check-version:
     runs-on: ubuntu-latest
     outputs:
-      version-changed: ${{ steps.check.outputs.changed }}
+      should-publish: ${{ steps.check.outputs.should_publish }}
       new-version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Check if version changed
-        id: check
-        run: |
-          if git diff HEAD^ HEAD -- package.json | grep -q '"version"'; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
 
       - name: Get version
         id: version
@@ -41,14 +35,29 @@ jobs:
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Check if version exists on npm
+        id: check
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          
+          # Check if the version exists on npm
+          if npm view "$PACKAGE_NAME@$VERSION" version 2>/dev/null; then
+            echo "Version $VERSION already published to npm. Skipping release."
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version $VERSION not found on npm. Proceeding with release."
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+
   release-and-publish:
     needs: check-version
     # Only run the publish job when:
     # - the CI workflow run concluded successfully,
     # - it ran against the 'main' branch, and
-    # - package.json version changed.
+    # - the version is not already published to npm.
     if: >-
-      needs.check-version.outputs.version-changed == 'true' &&
+      needs.check-version.outputs.should-publish == 'true' &&
       github.event_name == 'workflow_run' &&
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch == 'main'
