@@ -32,6 +32,15 @@
  */
 
 /**
+ * @typedef {object} StoreAdapter
+ * @property {(key: string, value: any, ttl?: number) => void} put - Store a value with optional TTL (seconds).
+ * @property {(key: string) => any | undefined} get - Retrieve a value or undefined if missing/expired.
+ * @property {(key: string) => void} evict - Remove a key from the store.
+ * @property {() => void} clear - Remove all entries from the store.
+ * @property {() => number} size - Return number of entries in the store.
+ */
+
+/**
  * Route context containing matched configuration and parameters.
  * @typedef {object} RouteContext
  * @property {KeyConfig} keyConfig - The key configuration that matched.

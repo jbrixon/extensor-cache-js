@@ -13,7 +13,7 @@ class ExtensorCache {
 
   /**
    * Create a cache manager.
-   * @param {object} store - The underlying store adapter (must implement put, get, evict, clear, size methods).
+   * @param {StoreAdapter} store - The underlying store adapter (must implement put, get, evict, clear, size methods).
    * @param {GlobalConfig} [globalConfig={}] - Global configuration settings for the cache.
    */
   constructor(store, globalConfig = {}) {
