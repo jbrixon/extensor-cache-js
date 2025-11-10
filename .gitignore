@@ -2,8 +2,10 @@
 
 # compiled output
 /dist
+/build
 /tmp
 /out-tsc
+*.tsbuildinfo
 
 # Runtime data
 pids
