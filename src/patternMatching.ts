@@ -1,3 +1,5 @@
+import { PossibleRouteContext } from "./extensorCache";
+
 /**
  * Check if a key matches a pattern and extract parameters.
  * Patterns can include parameter placeholders in the form {paramName}.
@@ -8,7 +10,7 @@
  *   - params: object with extracted parameter values (if match is true)
  *   - key: the original key (if match is true)
  */
-function checkForMatch(pattern, key) {
+function checkForMatch(pattern: string, key: string): PossibleRouteContext {
   const regex = pattern.replace(/{(.*?)}/g, "(?<$1>.*?)");
   const match = key.match(new RegExp(`^${regex}$`));
 
@@ -16,9 +18,10 @@ function checkForMatch(pattern, key) {
     return { match: false };
   }
 
-  const params = {};
+  const params: Record<string, string> = {};
   const groupNames = Object.keys(match.groups || {});
   for (const groupName of groupNames) {
+    // @ts-expect-error because match.groups is possibly undefined, but we check for that above
     params[groupName] = match.groups[groupName];
   }
 
@@ -35,7 +38,7 @@ function checkForMatch(pattern, key) {
  * @param {string} pattern - The pattern to validate (e.g., "user:{id}/posts:{postId}").
  * @returns {boolean} true if the pattern is valid, false otherwise.
  */
-function keyPatternIsValid(pattern) {
+function keyPatternIsValid(pattern: string): boolean {
   const parameterNames = pattern.match(/{(.*?)}/g);
   if (!parameterNames) {
     return true;

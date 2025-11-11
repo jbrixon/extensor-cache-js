@@ -4,6 +4,11 @@
   "description": "Simple caching library.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "COPYING"
+  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -12,8 +17,7 @@
     "lint": "eslint src/ tests/",
     "lint:fix": "eslint src/ tests/ --fix",
     "format": "prettier --write \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\"",
-    "format:check": "prettier --check \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\"",
-    "prepublishOnly": "npm run build"
+    "format:check": "prettier --check \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\""
   },
   "keywords": [
     "caching",

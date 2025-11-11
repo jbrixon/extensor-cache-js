@@ -1,5 +1,5 @@
-import ReadStrategies from "./readStrategies";
-import WriteStrategies from "./writeStrategies";
+import { ReadStrategies, ReadStrategy } from "./readStrategies";
+import { WriteStrategies, WriteStrategy } from "./writeStrategies";
 
 /**
  * Global configuration class for cache behavior.
@@ -7,16 +7,18 @@ import WriteStrategies from "./writeStrategies";
  * @type {GlobalConfig}
  */
 class GlobalConfig {
-  /**
-   * Create a global configuration object.
-   * @param {number} [ttl=0] - Time to live in seconds. A value of 0 means no expiration.
-   * @param {ReadStrategy} [readStrategy=ReadStrategies.cacheOnly] - The read strategy to use (CACHE_ONLY, READ_THROUGH, or READ_AROUND).
-   * @param {WriteStrategy} [writeStrategy=WriteStrategies.cacheOnly] - The write strategy to use (CACHE_ONLY, WRITE_THROUGH, or WRITE_BACK).
-   */
+  ttl: number;
+  readStrategy: ReadStrategy;
+  writeStrategy: WriteStrategy;
+  writeRetryCount: number;
+  writeRetryInterval: number;
+  writeRetryBackoff: boolean;
+  writeRetryIntervalCap: number;
+
   constructor(
-    ttl = 0,
-    readStrategy = ReadStrategies.cacheOnly,
-    writeStrategy = WriteStrategies.cacheOnly
+    ttl: number = 0,
+    readStrategy: ReadStrategy = ReadStrategies.cacheOnly,
+    writeStrategy: WriteStrategy = WriteStrategies.cacheOnly
   ) {
     /** @type {number} Time to live in seconds */
     this.ttl = ttl;
