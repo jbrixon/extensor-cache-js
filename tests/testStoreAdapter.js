@@ -35,6 +35,10 @@ class TestStoreAdapter {
     return Object.keys(this.#cache).length;
   }
 
+  getCacheEntry(key) {
+    return this.#cache[key];
+  }
+
   #checkForFreshness(key) {
     const cache = this.#cache[key];
     if (!cache) return;
