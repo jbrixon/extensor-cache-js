@@ -10,7 +10,6 @@ export type Callback = (context: {
 /**
  * Key-specific configuration class that extends GlobalConfig.
  * Defines caching behavior for keys matching a specific pattern.
- * @type {KeyConfig}
  */
 class KeyConfig extends GlobalConfig {
   pattern: string;
@@ -30,19 +29,12 @@ class KeyConfig extends GlobalConfig {
     writeStrategy: WriteStrategy = WriteStrategies.cacheOnly
   ) {
     super(ttl, readStrategy, writeStrategy);
-    /** @type {string} The key pattern */
     this.pattern = pattern;
-    /** @type {Callback} Read callback function */
     this.readCallback = readCallback;
-    /** @type {ReadStrategy} The read strategy */
     this.readStrategy = readStrategy;
-    /** @type {Callback} Write callback function */
     this.writeCallback = writeCallback;
-    /** @type {WriteStrategy} The write strategy */
     this.writeStrategy = writeStrategy;
-    /** @type {Callback} Evict callback function */
     this.evictCallback = () => {};
-    /** @type {Callback|undefined} Update callback function (optional, falls back to writeCallback) */
     this.updateCallback = undefined;
   }
 }

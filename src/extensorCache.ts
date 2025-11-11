@@ -36,8 +36,8 @@ class ExtensorCache {
 
   /**
    * Create a cache manager.
-   * @param {StoreAdapter} store - The underlying store adapter (must implement put, get, evict, clear, size methods).
-   * @param {GlobalConfig} [globalConfig=new GlobalConfig()] - Global configuration settings for the cache.
+   * @param store - The underlying store adapter (must implement put, get, evict, clear, size methods).
+   * @param globalConfig - Global configuration settings for the cache.
    */
   constructor(
     store: StoreAdapter,
@@ -50,9 +50,9 @@ class ExtensorCache {
 
   /**
    * Write and cache a value.
-   * @param {string} key - The cache key.
-   * @param {*} value - The value to cache.
-   * @returns {Promise<void>} A Promise which resolves when the put attempt has finished.
+   * @param key - The cache key.
+   * @param value - The value to cache.
+   * @returns A Promise which resolves when the put attempt has finished.
    */
   async put(key: string, value: unknown): Promise<void> {
     const route = this.#findRoute(key);
@@ -77,10 +77,10 @@ class ExtensorCache {
 
   /**
    * Fetch a value.
-   * @param {string} key - The cache key to retrieve.
-   * @returns {Promise<*>} The value of the key. Depending on the configuration this will be either
+   * @param key - The cache key to retrieve.
+   * @returns The value of the key. Depending on the configuration this will be either
    *   a cached or live value.
-   * @throws {Error} If the key is not found (cache-only mode) or if read callback fails without cached fallback.
+   * @throws If the key is not found (cache-only mode) or if read callback fails without cached fallback.
    */
   async get(key: string): Promise<unknown> {
     const route = this.#findRoute(key);
@@ -134,9 +134,9 @@ class ExtensorCache {
 
   /**
    * Update a value.
-   * @param {string} key - The cache key to update.
-   * @param {*} value - The new value.
-   * @returns {Promise<void>} A Promise which resolves when the update attempt has finished.
+   * @param key - The cache key to update.
+   * @param value - The new value.
+   * @returns A Promise which resolves when the update attempt has finished.
    */
   async update(key: string, value: unknown): Promise<void> {
     const route = this.#findRoute(key);
@@ -164,8 +164,8 @@ class ExtensorCache {
 
   /**
    * Delete a value.
-   * @param {string} key - The cache key to evict.
-   * @returns {Promise<void>} A Promise which resolves when the delete attempt has finished.
+   * @param key - The cache key to evict.
+   * @returns A Promise which resolves when the delete attempt has finished.
    */
   async evict(key: string): Promise<void> {
     const route = this.#findRoute(key);
@@ -190,8 +190,8 @@ class ExtensorCache {
 
   /**
    * Add configuration for a new cached value.
-   * @param {KeyConfig} config - The key configuration to register.
-   * @throws {Error} If the key pattern is invalid.
+   * @param config - The key configuration to register.
+   * @throws If the key pattern is invalid.
    */
   register(config: KeyConfig) {
     if (!keyPatternIsValid(config.pattern)) {
@@ -209,8 +209,8 @@ class ExtensorCache {
 
   /**
    * Check if a key exists in the cache.
-   * @param {string} key - The cache key to check.
-   * @returns {boolean} true if the key is present in the cache.
+   * @param key - The cache key to check.
+   * @returns true if the key is present in the cache.
    */
   containsKey(key: string): boolean {
     return this.#store.get(key) !== undefined;
@@ -218,7 +218,7 @@ class ExtensorCache {
 
   /**
    * Count the number of keys stored in the cache.
-   * @returns {number} An integer representing the total number of keys stored.
+   * @returns An integer representing the total number of keys stored.
    */
   size(): number {
     return this.#store.size();
@@ -228,9 +228,9 @@ class ExtensorCache {
    * Handle callback for keys configured with write-back caching.
    * Implements retry logic with optional exponential backoff.
    * @private
-   * @param {ConfiguredRoute} route - The route context containing key configuration and parameters.
-   * @param {Callback} callback - The callback function to execute.
-   * @returns {Promise<void>} A Promise which resolves when the write has finished, either due to
+   * @param route - The route context containing key configuration and parameters.
+   * @param callback - The callback function to execute.
+   * @returns A Promise which resolves when the write has finished, either due to
    *   success or failure after all retry attempts.
    */
   async #writeBack(route: ConfiguredRoute, callback: Callback): Promise<void> {
@@ -276,8 +276,8 @@ class ExtensorCache {
   /**
    * Find the configured route matching a key.
    * @private
-   * @param {string} key - The key to match against registered patterns.
-   * @returns {ConfiguredRoute|undefined} The route which matched the passed key, or undefined if no match found.
+   * @param key - The key to match against registered patterns.
+   * @returns The route which matched the passed key, or undefined if no match found.
    */
   #findRoute(key: string): ConfiguredRoute | undefined {
     for (const keyConfig of this.#patternRegister) {

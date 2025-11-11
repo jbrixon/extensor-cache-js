@@ -20,9 +20,9 @@ class InMemoryStoreAdapter {
 
   /**
    * Store a value in the cache with optional TTL.
-   * @param {string} key - The cache key.
-   * @param {*} value - The value to store.
-   * @param {number} [ttl=0] - Time to live in seconds. A value of 0 means no expiration.
+   * @param key - The cache key.
+   * @param value - The value to store.
+   * @param ttl - Time to live in seconds. A value of 0 means no expiration.
    */
   put(key: string, value: unknown, ttl: number = 0) {
     const created = new Date();
@@ -37,8 +37,8 @@ class InMemoryStoreAdapter {
 
   /**
    * Retrieve a value from the cache.
-   * @param {string} key - The cache key.
-   * @returns {*|undefined} The cached value if found and not expired, otherwise undefined.
+   * @param key - The cache key.
+   * @returns The cached value if found and not expired, otherwise undefined.
    */
   get(key: string): unknown | undefined {
     if (!(key in this.#cache)) {
@@ -49,7 +49,7 @@ class InMemoryStoreAdapter {
 
   /**
    * Remove a value from the cache.
-   * @param {string} key - The cache key to evict.
+   * @param key - The cache key to evict.
    */
   evict(key: string) {
     delete this.#cache[key];
@@ -64,7 +64,7 @@ class InMemoryStoreAdapter {
 
   /**
    * Get the number of entries in the cache.
-   * @returns {number} The count of cached entries.
+   * @returns The count of cached entries.
    */
   size(): number {
     return Object.keys(this.#cache).length;
@@ -73,8 +73,8 @@ class InMemoryStoreAdapter {
   /**
    * Check if a cached value is still fresh and delete if expired.
    * @private
-   * @param {string} key - The cache key to check.
-   * @returns {*|undefined} The cached value if fresh, undefined if expired or not found.
+   * @param key - The cache key to check.
+   * @returns The cached value if fresh, undefined if expired or not found.
    */
   #checkForFreshness(key: string): unknown | undefined {
     const cache = this.#cache[key];
