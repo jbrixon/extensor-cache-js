@@ -63,3 +63,4 @@ class KeyConfig extends GlobalConfig {
 }
 
 export default KeyConfig;
+
