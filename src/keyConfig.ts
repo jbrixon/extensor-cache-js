@@ -1,6 +1,6 @@
 import GlobalConfig from "./globalConfig";
-import { ReadStrategies, ReadStrategy } from "./readStrategies";
-import { WriteStrategies, WriteStrategy } from "./writeStrategies";
+import { ReadStrategy } from "./readStrategies";
+import { WriteStrategy } from "./writeStrategies";
 
 export type Callback = (context: {
   key: string;
@@ -14,26 +14,49 @@ export type Callback = (context: {
 class KeyConfig extends GlobalConfig {
   pattern: string;
   readCallback: Callback;
-  readStrategy: ReadStrategy;
   writeCallback: Callback;
-  writeStrategy: WriteStrategy;
   evictCallback: Callback;
   updateCallback?: Callback;
 
   constructor(
     pattern: string,
-    ttl: number = 0,
-    readCallback: Callback = () => {},
-    readStrategy: ReadStrategy = ReadStrategies.cacheOnly,
-    writeCallback: Callback = () => {},
-    writeStrategy: WriteStrategy = WriteStrategies.cacheOnly
+    ttl?: number,
+    readCallback?: Callback,
+    readStrategy?: ReadStrategy,
+    writeCallback?: Callback,
+    writeStrategy?: WriteStrategy
   ) {
-    super(ttl, readStrategy, writeStrategy);
+    super();
     this.pattern = pattern;
-    this.readCallback = readCallback;
-    this.readStrategy = readStrategy;
-    this.writeCallback = writeCallback;
-    this.writeStrategy = writeStrategy;
+
+    // Only set ttl if explicitly provided, otherwise delete the inherited default
+    if (ttl !== undefined) {
+      this.ttl = ttl;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (this as any).ttl;
+    }
+
+    this.readCallback = readCallback !== undefined ? readCallback : () => {};
+
+    // Only set readStrategy if explicitly provided, otherwise delete the inherited default
+    if (readStrategy !== undefined) {
+      this.readStrategy = readStrategy;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (this as any).readStrategy;
+    }
+
+    this.writeCallback = writeCallback !== undefined ? writeCallback : () => {};
+
+    // Only set writeStrategy if explicitly provided, otherwise delete the inherited default
+    if (writeStrategy !== undefined) {
+      this.writeStrategy = writeStrategy;
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (this as any).writeStrategy;
+    }
+
     this.evictCallback = () => {};
     this.updateCallback = undefined;
   }
