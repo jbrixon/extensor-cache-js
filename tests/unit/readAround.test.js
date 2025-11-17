@@ -1,7 +1,7 @@
-import ExtensorCache from "../src/extensorCache";
+import ExtensorCache from "../../src/extensorCache";
 import InMemoryStoreAdapter from "./testStoreAdapter";
-import KeyConfig from "../src/keyConfig";
-import { ReadStrategies } from "../src/readStrategies";
+import KeyConfig from "../../src/keyConfig";
+import { ReadStrategies } from "../../src/readStrategies";
 
 describe("read-around caching", () => {
   let cache, store;

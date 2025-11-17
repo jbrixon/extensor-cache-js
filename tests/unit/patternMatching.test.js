@@ -1,4 +1,4 @@
-import * as patternMatching from "../src/patternMatching";
+import * as patternMatching from "../../src/patternMatching";
 
 describe("patternMatching", () => {
   describe("checkForMatch", () => {

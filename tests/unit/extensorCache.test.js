@@ -1,6 +1,6 @@
-import ExtensorCache from "../src/extensorCache";
+import ExtensorCache from "../../src/extensorCache";
 import InMemoryStoreAdapter from "./testStoreAdapter";
-import KeyConfig from "../src/keyConfig";
+import KeyConfig from "../../src/keyConfig";
 
 describe("extensorCache", () => {
   let cache, store;

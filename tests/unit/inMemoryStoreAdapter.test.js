@@ -1,4 +1,4 @@
-import InMemoryStoreAdapter from "../src/inMemoryStoreAdapter";
+import InMemoryStoreAdapter from "../../src/inMemoryStoreAdapter";
 
 describe("inMemoryStoreAdapter", () => {
   let store;

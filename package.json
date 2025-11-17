@@ -10,14 +10,16 @@
     "COPYING"
   ],
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "type-check": "tsc --noEmit",
-    "test": "jest --silent --detectOpenHandles",
-    "lint": "eslint src/ tests/",
-    "lint:fix": "eslint src/ tests/ --fix",
-    "format": "prettier --write \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\"",
-    "format:check": "prettier --check \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\""
+  "build": "tsc",
+  "build:watch": "tsc --watch",
+  "type-check": "tsc --noEmit",
+  "test": "npm run test:unit",
+  "test:unit": "jest --silent --detectOpenHandles --testPathPattern=tests/unit",
+  "test:acceptance": "jest --silent --detectOpenHandles --testPathPattern=tests/acceptance",
+  "lint": "eslint src/ tests/",
+  "lint:fix": "eslint src/ tests/ --fix",
+  "format": "prettier --write \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\"",
+  "format:check": "prettier --check \"src/**/*.{js,ts}\" \"tests/**/*.{js,ts}\""
   },
   "keywords": [
     "caching",

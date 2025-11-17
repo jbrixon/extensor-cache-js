@@ -1,7 +1,7 @@
-import ExtensorCache from "../src/extensorCache";
+import ExtensorCache from "../../src/extensorCache";
 import InMemoryStoreAdapter from "./testStoreAdapter";
-import KeyConfig from "../src/keyConfig";
-import { WriteStrategies } from "../src/writeStrategies";
+import KeyConfig from "../../src/keyConfig";
+import { WriteStrategies } from "../../src/writeStrategies";
 
 describe("write-back caching", () => {
   let cache, store;
