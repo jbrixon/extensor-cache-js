@@ -197,7 +197,11 @@ class ExtensorCache {
     if (!keyPatternIsValid(config.pattern)) {
       throw new Error("Invalid key pattern!");
     }
-    this.#patternRegister.push({ ...this.#globalConfig, ...config });
+    this.#patternRegister.push({
+      ...this.#globalConfig,
+      ...config,
+      ttl: config.ttl ?? this.#globalConfig.ttl,
+    });
   }
 
   /**

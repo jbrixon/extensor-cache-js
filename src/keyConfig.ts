@@ -1,4 +1,4 @@
-import GlobalConfig from "./globalConfig";
+import BaseConfig from "./baseConfig";
 import { ReadStrategies, ReadStrategy } from "./readStrategies";
 import { WriteStrategies, WriteStrategy } from "./writeStrategies";
 
@@ -11,7 +11,8 @@ export type Callback = (context: {
  * Key-specific configuration class that extends GlobalConfig.
  * Defines caching behavior for keys matching a specific pattern.
  */
-class KeyConfig extends GlobalConfig {
+class KeyConfig extends BaseConfig {
+  ttl: number | undefined;
   pattern: string;
   readCallback: Callback;
   readStrategy: ReadStrategy;
@@ -22,13 +23,14 @@ class KeyConfig extends GlobalConfig {
 
   constructor(
     pattern: string,
-    ttl: number = 0,
+    ttl: number | undefined = undefined,
     readCallback: Callback = () => {},
     readStrategy: ReadStrategy = ReadStrategies.cacheOnly,
     writeCallback: Callback = () => {},
     writeStrategy: WriteStrategy = WriteStrategies.cacheOnly
   ) {
-    super(ttl, readStrategy, writeStrategy);
+    super(readStrategy, writeStrategy);
+    this.ttl = ttl;
     this.pattern = pattern;
     this.readCallback = readCallback;
     this.readStrategy = readStrategy;
