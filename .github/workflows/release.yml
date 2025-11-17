@@ -77,11 +77,12 @@ jobs:
       - name: Update npm
         run: npm install -g npm@latest
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
+      - name: Download dist tarball from CI
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-tarball
+          path: .
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
@@ -93,5 +94,9 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Publish to npm
-        run: npm publish
+      - name: Publish tarball to npm
+        run: |
+          echo "Artifacts in workspace:"
+          ls -la
+          echo "Publishing generated tarball(s) to npm"
+          npm publish ./*.tgz
