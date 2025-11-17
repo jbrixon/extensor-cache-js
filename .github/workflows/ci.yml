@@ -41,24 +41,68 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+  build:
+    name: Build & Pack (single node)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type check
+        run: npm run type-check
+
       - name: Build package
         run: npm run build
 
       - name: Pack built package (create tarball from dist)
         run: npm pack
 
-      - name: Install built package tarball
-        # Install the generated tarball so `import "extensor-cache"` resolves to the built /dist
-        run: |
-          # there will be a file like extensor-cache-1.1.3.tgz; install whatever .tgz exists
-          ls -la *.tgz
-          npm i ./*.tgz
-
       - name: Upload packaged artifact
         uses: actions/upload-artifact@v4
         with:
           name: dist-tarball
           path: '*.tgz'
+
+  acceptance:
+    name: Acceptance tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dev dependencies
+        run: npm ci
+
+      - name: Download packaged artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-tarball
+
+      - name: Install built package tarball
+        run: |
+          # there will be a file like extensor-cache-1.1.3.tgz; install whatever .tgz exists
+          if ls -la *.tgz; then
+            npm i ./*.tgz
+          else
+            echo "No .tgz package found to install!" >&2
+            exit 1
+          fi
 
       - name: Run acceptance tests against built package
         run: npm run test:acceptance
