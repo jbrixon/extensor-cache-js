@@ -61,7 +61,7 @@ class ExtensorCache {
     if (route?.keyConfig.writeStrategy === WriteStrategies.writeThrough) {
       return Promise.resolve(route.keyConfig.writeCallback(route.context)).then(
         () => {
-          this.#store.put(key, value, route?.keyConfig.ttl);
+          this.#store.put(key, value, route.keyConfig.ttl);
         }
       );
     }
